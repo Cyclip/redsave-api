@@ -1,7 +1,7 @@
 from sanic.response import json
 
 
-def determine_type(submission):
+async def determine_type(submission):
     """Determine the type of post
 
     Args:
