@@ -24,17 +24,15 @@ async def get_link(req):
     
     # extract post id 
     try:        
-        postID = re.search('http[s]?://www.reddit.com/r/.*/comments/(.*?)/.*/', url)[0]
-    except IndexError:
+        postID = re.search('(?<=comments/)(.*?)(?=\/)', url).group()
+    except:
         return funcs.generate_response(False, "Invalid URL")
 
+    print(postID)
     submission = reddit.submission(postID)
     
-    try:
-        postType = funcs.determine_type(submission)
-    except Exception as e:
-        return funcs.generate_response(False, "couldnt identify post type")
-    
+    postType = funcs.determine_type(submission)
+
     if postType == "self":
         return funcs.generate_response(False, "Post is a text post")
     elif postType == "gallery":
