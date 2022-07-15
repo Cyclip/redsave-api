@@ -11,6 +11,7 @@ import hashlib
 import logging
 import asyncio
 import time
+from urllib.parse import urlparse
 
 MAX_FILE_STORED_TIME = 60 * 60 * 6 # 6 hours
 
@@ -30,6 +31,27 @@ reddit = praw.Reddit(
     client_secret=os.getenv("CLIENT_SECRET"),
     user_agent=os.getenv("CLIENT_USERAGENT"),
 )
+
+
+def validate_m3u8_url(url):
+    urlParsed = urlparse(url)
+    if urlParsed.scheme != "https":
+        return False, "Invalid scheme"
+    
+    if urlParsed.netloc != "v.redd.it":
+        return False, "Invalid netloc"
+    
+    split = urlParsed.path.split("/")[1:]
+    if len(split) != 2:
+        return False, "Invalid path"
+
+    if re.search('^[a-z0-9]{13}$', split[0]) is None:
+        return False, "Invalid id"
+    
+    if split[1] != "HLSPlaylist.m3u8":
+        return False, "Invalid file"
+    
+    return True, ""
 
 
 @app.route("/getlink")
@@ -63,6 +85,16 @@ async def get_mp4(req):
     # https://v.redd.it/jeswo38hjtsif/HLSPlaylist.m3u8
     url = req.args.get("url").encode()
     filename = f'conversions/{hashlib.md5(url).hexdigest()}.mp4'
+
+    # first check if url is safe
+    safe, resp = validate_m3u8_url(url)
+    if not safe:
+        return funcs.generate_response(
+            False,
+            {
+                "error": resp
+            }
+        )
 
     if not os.path.exists(filename):
         # convert mu3u8 -> mp4 via ffmpeg.exe
