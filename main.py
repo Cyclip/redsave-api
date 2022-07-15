@@ -135,7 +135,7 @@ async def routine_delete_conversions():
         except Exception as e:
             logging.error(e)
         
-        asyncio.sleep(60 * 60) # hourly
+        await asyncio.sleep(60 * 60) # hourly
 
 if __name__ == "__main__":
     pathlib.Path("./conversions").mkdir(parents=True, exist_ok=True)
