@@ -83,8 +83,8 @@ async def get_link(req):
 async def get_mp4(req):
     # Example URL:
     # https://v.redd.it/jeswo38hjtsif/HLSPlaylist.m3u8
-    url = req.args.get("url").encode()
-    filename = f'conversions/{hashlib.md5(url).hexdigest()}.mp4'
+    url = req.args.get("url")
+    filename = f'conversions/{hashlib.md5(url.encode()).hexdigest()}.mp4'
 
     # first check if url is safe
     safe, resp = validate_m3u8_url(url)
